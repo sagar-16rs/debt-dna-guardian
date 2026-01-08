@@ -14,16 +14,351 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      accounts: {
+        Row: {
+          account_id: string
+          company_name: string
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          days_overdue: number
+          id: string
+          industry: string | null
+          location: string | null
+          ltv_score: number | null
+          outstanding_amount: number
+          risk_level: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          company_name: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          days_overdue?: number
+          id?: string
+          industry?: string | null
+          location?: string | null
+          ltv_score?: number | null
+          outstanding_amount?: number
+          risk_level?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          company_name?: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          days_overdue?: number
+          id?: string
+          industry?: string | null
+          location?: string | null
+          ltv_score?: number | null
+          outstanding_amount?: number
+          risk_level?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      agent_metrics: {
+        Row: {
+          accounts_resolved: number | null
+          agent_id: string
+          avg_compliance_score: number | null
+          avg_resolution_days: number | null
+          created_at: string
+          customer_satisfaction: number | null
+          id: string
+          period_end: string
+          period_start: string
+          total_recovered: number | null
+        }
+        Insert: {
+          accounts_resolved?: number | null
+          agent_id: string
+          avg_compliance_score?: number | null
+          avg_resolution_days?: number | null
+          created_at?: string
+          customer_satisfaction?: number | null
+          id?: string
+          period_end: string
+          period_start: string
+          total_recovered?: number | null
+        }
+        Update: {
+          accounts_resolved?: number | null
+          agent_id?: string
+          avg_compliance_score?: number | null
+          avg_resolution_days?: number | null
+          created_at?: string
+          customer_satisfaction?: number | null
+          id?: string
+          period_end?: string
+          period_start?: string
+          total_recovered?: number | null
+        }
+        Relationships: []
+      }
+      ai_predictions: {
+        Row: {
+          account_id: string
+          confidence_score: number | null
+          created_at: string
+          factors: Json | null
+          id: string
+          model_version: string | null
+          prediction_type: string
+          prediction_value: number | null
+          recommended_action: string | null
+          recommended_strategy: string | null
+        }
+        Insert: {
+          account_id: string
+          confidence_score?: number | null
+          created_at?: string
+          factors?: Json | null
+          id?: string
+          model_version?: string | null
+          prediction_type: string
+          prediction_value?: number | null
+          recommended_action?: string | null
+          recommended_strategy?: string | null
+        }
+        Update: {
+          account_id?: string
+          confidence_score?: number | null
+          created_at?: string
+          factors?: Json | null
+          id?: string
+          model_version?: string | null
+          prediction_type?: string
+          prediction_value?: number | null
+          recommended_action?: string | null
+          recommended_strategy?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_predictions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_logs: {
+        Row: {
+          account_id: string | null
+          action_details: Json | null
+          action_type: string
+          compliance_score: number | null
+          created_at: string
+          flag_reason: string | null
+          flagged: boolean | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          account_id?: string | null
+          action_details?: Json | null
+          action_type: string
+          compliance_score?: number | null
+          created_at?: string
+          flag_reason?: string | null
+          flagged?: boolean | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          account_id?: string | null
+          action_details?: Json | null
+          action_type?: string
+          compliance_score?: number | null
+          created_at?: string
+          flag_reason?: string | null
+          flagged?: boolean | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      communications: {
+        Row: {
+          account_id: string
+          agent_id: string | null
+          blocked: boolean | null
+          channel: string | null
+          compliance_score: number | null
+          content: string | null
+          created_at: string
+          direction: string | null
+          id: string
+          sentiment_score: number | null
+        }
+        Insert: {
+          account_id: string
+          agent_id?: string | null
+          blocked?: boolean | null
+          channel?: string | null
+          compliance_score?: number | null
+          content?: string | null
+          created_at?: string
+          direction?: string | null
+          id?: string
+          sentiment_score?: number | null
+        }
+        Update: {
+          account_id?: string
+          agent_id?: string | null
+          blocked?: boolean | null
+          channel?: string | null
+          compliance_score?: number | null
+          content?: string | null
+          created_at?: string
+          direction?: string | null
+          id?: string
+          sentiment_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "communications_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          department: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          department?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          department?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      workflows: {
+        Row: {
+          account_id: string
+          assigned_agent: string | null
+          automation_rules: Json | null
+          created_at: string
+          due_date: string | null
+          id: string
+          notes: string | null
+          priority: number | null
+          status: string
+          updated_at: string
+          workflow_type: string
+        }
+        Insert: {
+          account_id: string
+          assigned_agent?: string | null
+          automation_rules?: Json | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          priority?: number | null
+          status?: string
+          updated_at?: string
+          workflow_type: string
+        }
+        Update: {
+          account_id?: string
+          assigned_agent?: string | null
+          automation_rules?: Json | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          priority?: number | null
+          status?: string
+          updated_at?: string
+          workflow_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflows_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "supervisor" | "agent"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +485,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "supervisor", "agent"],
+    },
   },
 } as const
