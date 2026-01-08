@@ -15,7 +15,7 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isDemoMode } = useAuth();
 
   if (isLoading) {
     return (
@@ -23,6 +23,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
+  }
+
+  // Allow access in demo mode
+  if (isDemoMode) {
+    return <>{children}</>;
   }
 
   if (!user) {
@@ -33,7 +38,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AppRoutes() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isDemoMode } = useAuth();
 
   if (isLoading) {
     return (
@@ -47,7 +52,7 @@ function AppRoutes() {
     <Routes>
       <Route
         path="/login"
-        element={user ? <Navigate to="/" replace /> : <Login />}
+        element={(user || isDemoMode) ? <Navigate to="/" replace /> : <Login />}
       />
       <Route
         path="/"

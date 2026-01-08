@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Settings, Sparkles, Check, ArrowRight, Calendar, CreditCard, Send, Search, FileText, BarChart3 } from "lucide-react";
+import { Settings, Sparkles, Check, ArrowRight, Calendar, CreditCard, Send, Search, BarChart3, Shield, Brain, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProgressStepper } from "@/components/resolution/ProgressStepper";
 import { PaymentDateSlider } from "@/components/resolution/PaymentDateSlider";
 import { LogisticsInsight } from "@/components/resolution/LogisticsInsight";
 import { AccountHealth } from "@/components/resolution/AccountHealth";
+import { toast } from "sonner";
 
 const steps = [
   { id: "1", label: "Analysis", status: "completed" as const },
@@ -17,6 +18,14 @@ const steps = [
 
 export default function ResolutionHub() {
   const [selectedOption, setSelectedOption] = useState<"split" | "custom">("split");
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleConfirmProposal = async () => {
+    setIsProcessing(true);
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    toast.success("Payment plan confirmed! Customer will receive confirmation email.");
+    setIsProcessing(false);
+  };
 
   return (
     <div className="min-h-[calc(100vh-64px)] flex flex-col">
@@ -25,7 +34,11 @@ export default function ResolutionHub() {
         <div className="container max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <span className="text-2xl font-bold gradient-text-primary">FedEx</span>
-            <span className="text-sm text-muted-foreground">Resolution Hub</span>
+            <span className="text-sm text-muted-foreground">Customer Resolution Portal</span>
+            <Badge className="bg-secondary/10 text-secondary border-0">
+              <Brain className="w-3 h-3 mr-1" />
+              AI-Powered
+            </Badge>
           </div>
           <nav className="flex items-center gap-4">
             <button className="text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -54,16 +67,22 @@ export default function ResolutionHub() {
         <div className="flex items-start justify-between mb-8">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <Settings className="w-5 h-5 text-muted-foreground animate-spin-slow" />
+              <Settings className="w-5 h-5 text-muted-foreground animate-spin" style={{ animationDuration: '3s' }} />
               <h1 className="text-2xl font-bold">Invoice #INV-2023-8849</h1>
             </div>
             <p className="text-sm text-muted-foreground">
-              Value Preservation Ecosystem active. Analyzing payment flexibility...
+              Value Preservation Ecosystem active. AI analyzing payment flexibility options...
             </p>
           </div>
-          <Badge className="bg-primary/20 text-primary border border-primary/30 animate-pulse">
-            ● Action Required
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge className="bg-primary/20 text-primary border border-primary/30 animate-pulse">
+              ● Action Required
+            </Badge>
+            <Badge variant="outline" className="border-secondary/30 text-secondary">
+              <Bot className="w-3 h-3 mr-1" />
+              RPA Connected
+            </Badge>
+          </div>
         </div>
 
         {/* Progress Stepper */}
@@ -106,7 +125,7 @@ export default function ResolutionHub() {
                   <Check className="w-4 h-4 text-secondary" />
                 </div>
                 <p className="text-2xl font-bold mt-1 text-secondary">-$50.00</p>
-                <p className="text-xs text-success mt-1">▶ Late Delivery Detected</p>
+                <p className="text-xs text-success mt-1">▶ Late Delivery Detected by AI</p>
               </motion.div>
 
               <motion.div
@@ -117,7 +136,7 @@ export default function ResolutionHub() {
               >
                 <p className="text-xs text-muted-foreground uppercase">Current Balance</p>
                 <p className="text-2xl font-bold mt-1 text-success">$1,200.00</p>
-                <p className="text-xs text-muted-foreground mt-1">Auto-Adjusted</p>
+                <p className="text-xs text-muted-foreground mt-1">Auto-Adjusted by ML</p>
               </motion.div>
             </div>
 
@@ -135,7 +154,7 @@ export default function ResolutionHub() {
                 <div>
                   <h3 className="text-lg font-semibold">Let's resolve this together.</h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    We've noticed you're a valued partner. Our system has unlocked flexible options to help you clear this balance while preserving your account standing.
+                    We've noticed you're a valued partner. Our AI has unlocked flexible options to help you clear this balance while preserving your account standing.
                   </p>
                 </div>
               </div>
@@ -170,9 +189,15 @@ export default function ResolutionHub() {
                       Select Plan
                     </Button>
                   </div>
-                  <Badge className="mt-3 bg-secondary/10 text-secondary border-0">
-                    ✓ AI Recommended
-                  </Badge>
+                  <div className="flex items-center gap-2 mt-3">
+                    <Badge className="bg-secondary/10 text-secondary border-0">
+                      <Brain className="w-3 h-3 mr-1" />
+                      AI Recommended
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      85% acceptance rate
+                    </Badge>
+                  </div>
                 </button>
 
                 {/* Custom Date Option */}
@@ -186,9 +211,22 @@ export default function ResolutionHub() {
               </div>
 
               {/* Confirm Button */}
-              <Button className="w-full mt-6 bg-primary hover:bg-primary/90 glow-primary h-12 text-base">
-                Confirm Proposal
-                <ArrowRight className="w-5 h-5 ml-2" />
+              <Button 
+                className="w-full mt-6 bg-primary hover:bg-primary/90 glow-primary h-12 text-base"
+                onClick={handleConfirmProposal}
+                disabled={isProcessing}
+              >
+                {isProcessing ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Processing...
+                  </div>
+                ) : (
+                  <>
+                    Confirm Proposal
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </>
+                )}
               </Button>
             </motion.div>
           </div>
@@ -198,7 +236,7 @@ export default function ResolutionHub() {
             <LogisticsInsight
               location="Memphis Hub Delay"
               date="Oct 24"
-              description="We detected a logistic delay at the Memphis Hub on Oct 24 affecting shipment #774923."
+              description="AI detected a logistic delay at the Memphis Hub affecting shipment #774923. Credit auto-applied."
               credit="$50.00"
             />
             <AccountHealth
@@ -206,6 +244,33 @@ export default function ResolutionHub() {
               potentialBoost={92}
               status="good"
             />
+            
+            {/* Automation Status */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="glass-card rounded-xl p-4"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <Bot className="w-4 h-4 text-secondary" />
+                <h4 className="font-medium text-sm">Automation Status</h4>
+              </div>
+              <div className="space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Legacy System Sync</span>
+                  <Badge className="bg-success/10 text-success border-0 text-[10px]">Connected</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Payment Gateway</span>
+                  <Badge className="bg-success/10 text-success border-0 text-[10px]">Ready</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Notification Queue</span>
+                  <Badge className="bg-secondary/10 text-secondary border-0 text-[10px]">Pending</Badge>
+                </div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </div>
@@ -214,14 +279,14 @@ export default function ResolutionHub() {
       <footer className="border-t border-border/50 py-4">
         <div className="container max-w-6xl mx-auto px-6 flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Shield className="w-4 h-4" />
             <span>Powered by</span>
-            <span className="font-semibold text-foreground">FedEx Value-Preservation Ecosystem</span>
+            <span className="font-semibold text-foreground">Debt DNA Value-Preservation System</span>
           </div>
           <nav className="flex items-center gap-6 text-sm text-muted-foreground">
             <button className="hover:text-foreground transition-colors">Help</button>
             <button className="hover:text-foreground transition-colors">Privacy Policy</button>
-            <button className="hover:text-foreground transition-colors">Site Map</button>
-            <button className="hover:text-foreground transition-colors">Conditions of Carriage</button>
+            <button className="hover:text-foreground transition-colors">Terms</button>
           </nav>
         </div>
       </footer>

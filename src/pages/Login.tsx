@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Shield, Mail, Lock, User, ArrowRight, Loader2 } from "lucide-react";
+import { Shield, Mail, Lock, User, ArrowRight, Loader2, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,12 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
 
+  const handleDemoMode = () => {
+    localStorage.setItem("demo_mode", "true");
+    toast.success("Demo mode activated!");
+    navigate("/");
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -28,6 +34,7 @@ export default function Login() {
 
       if (error) throw error;
       
+      localStorage.removeItem("demo_mode");
       toast.success("Welcome back!");
       navigate("/");
     } catch (error: any) {
@@ -145,6 +152,34 @@ export default function Login() {
             </div>
           </div>
 
+          {/* Demo Mode Button */}
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mb-8"
+          >
+            <Button
+              onClick={handleDemoMode}
+              className="w-full h-14 bg-gradient-to-r from-secondary to-secondary/80 hover:from-secondary/90 hover:to-secondary/70 text-base font-semibold shadow-lg"
+            >
+              <Play className="w-5 h-5 mr-2" />
+              Launch Demo Mode
+            </Button>
+            <p className="text-center text-xs text-muted-foreground mt-2">
+              Experience the full platform without signing up
+            </p>
+          </motion.div>
+
+          <div className="relative mb-8">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border/50" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">or sign in</span>
+            </div>
+          </div>
+
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="w-full mb-8 bg-muted/50">
               <TabsTrigger value="login" className="flex-1">Sign In</TabsTrigger>
@@ -187,7 +222,7 @@ export default function Login() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-primary hover:bg-primary/90 glow-primary text-base font-medium"
+                  className="w-full h-12 bg-primary hover:bg-primary/90 text-base font-medium"
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -255,7 +290,7 @@ export default function Login() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-primary hover:bg-primary/90 glow-primary text-base font-medium"
+                  className="w-full h-12 bg-primary hover:bg-primary/90 text-base font-medium"
                   disabled={isLoading}
                 >
                   {isLoading ? (
