@@ -7,9 +7,13 @@ import {
   Bell, 
   Settings,
   Shield,
-  Zap
+  Zap,
+  BarChart3,
+  LogOut
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -19,10 +23,18 @@ const navItems = [
   { path: "/", icon: Globe, label: "Dashboard" },
   { path: "/agent-portal", icon: MessageSquare, label: "Agent Portal" },
   { path: "/resolution-hub", icon: FileText, label: "Resolution Hub" },
+  { path: "/analytics", icon: BarChart3, label: "Analytics" },
 ];
 
 export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
+  const { user, signOut } = useAuth();
+
+  const userInitials = user?.user_metadata?.full_name
+    ?.split(" ")
+    .map((n: string) => n[0])
+    .join("")
+    .toUpperCase() || user?.email?.substring(0, 2).toUpperCase() || "U";
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -71,8 +83,18 @@ export function AppLayout({ children }: AppLayoutProps) {
           <button className="p-2 rounded-lg hover:bg-muted/50 transition-colors">
             <Settings className="w-5 h-5 text-muted-foreground" />
           </button>
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-primary flex items-center justify-center">
-            <span className="text-sm font-semibold">SJ</span>
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-primary flex items-center justify-center">
+              <span className="text-sm font-semibold">{userInitials}</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={signOut}
+              className="h-9 w-9 text-muted-foreground hover:text-foreground"
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
           </div>
         </div>
       </header>
