@@ -9,11 +9,13 @@ import {
   Shield,
   Zap,
   BarChart3,
-  LogOut
+  LogOut,
+  Beaker
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -28,16 +30,34 @@ const navItems = [
 
 export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
-  const { user, signOut } = useAuth();
+  const { user, isDemoMode, signOut } = useAuth();
 
-  const userInitials = user?.user_metadata?.full_name
-    ?.split(" ")
-    .map((n: string) => n[0])
-    .join("")
-    .toUpperCase() || user?.email?.substring(0, 2).toUpperCase() || "U";
+  const userInitials = isDemoMode 
+    ? "DM" 
+    : user?.user_metadata?.full_name
+        ?.split(" ")
+        .map((n: string) => n[0])
+        .join("")
+        .toUpperCase() || user?.email?.substring(0, 2).toUpperCase() || "U";
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Demo Mode Banner */}
+      {isDemoMode && (
+        <div className="bg-gradient-to-r from-secondary to-secondary/80 text-secondary-foreground py-2 px-4 text-center text-sm font-medium flex items-center justify-center gap-2">
+          <Beaker className="w-4 h-4" />
+          <span>Demo Mode - Exploring with sample data</span>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="ml-4 h-6 text-xs bg-white/20 border-white/30 hover:bg-white/30"
+            onClick={signOut}
+          >
+            Exit Demo
+          </Button>
+        </div>
+      )}
+
       {/* Top Navigation */}
       <header className="h-16 border-b border-border/50 glass-card flex items-center justify-between px-6 sticky top-0 z-50">
         <div className="flex items-center gap-3">
@@ -84,7 +104,12 @@ export function AppLayout({ children }: AppLayoutProps) {
             <Settings className="w-5 h-5 text-muted-foreground" />
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-primary flex items-center justify-center">
+            <div className={cn(
+              "w-9 h-9 rounded-full flex items-center justify-center",
+              isDemoMode 
+                ? "bg-gradient-to-br from-secondary to-secondary/80" 
+                : "bg-gradient-to-br from-accent to-primary"
+            )}>
               <span className="text-sm font-semibold">{userInitials}</span>
             </div>
             <Button

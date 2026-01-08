@@ -21,20 +21,25 @@ import {
   DollarSign,
   Users,
   Clock,
-  CheckCircle,
-  AlertTriangle,
   Target,
+  AlertTriangle,
+  Brain,
+  Bot,
+  Workflow,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useDashboardStats, useAccounts } from "@/hooks/useAccounts";
+import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/hooks/useAuth";
+import { useDashboardStats } from "@/hooks/useAccounts";
+import { mockDashboardStats } from "@/data/mockData";
 
 const recoveryTrend = [
-  { month: "Jul", recovered: 2.4, target: 2.2 },
-  { month: "Aug", recovered: 3.1, target: 2.8 },
-  { month: "Sep", recovered: 2.8, target: 3.0 },
-  { month: "Oct", recovered: 3.5, target: 3.2 },
-  { month: "Nov", recovered: 4.2, target: 3.5 },
-  { month: "Dec", recovered: 4.8, target: 3.8 },
+  { month: "Jul", recovered: 2.4, target: 2.2, ai_assisted: 1.8 },
+  { month: "Aug", recovered: 3.1, target: 2.8, ai_assisted: 2.4 },
+  { month: "Sep", recovered: 2.8, target: 3.0, ai_assisted: 2.1 },
+  { month: "Oct", recovered: 3.5, target: 3.2, ai_assisted: 2.8 },
+  { month: "Nov", recovered: 4.2, target: 3.5, ai_assisted: 3.5 },
+  { month: "Dec", recovered: 4.8, target: 3.8, ai_assisted: 4.1 },
 ];
 
 const agentPerformance = [
@@ -53,16 +58,25 @@ const riskDistribution = [
 ];
 
 const resolutionTimes = [
-  { range: "0-7 days", count: 234 },
-  { range: "8-14 days", count: 187 },
-  { range: "15-30 days", count: 142 },
-  { range: "31-60 days", count: 89 },
-  { range: "60+ days", count: 48 },
+  { range: "0-7 days", count: 234, color: "hsl(142, 72%, 45%)" },
+  { range: "8-14 days", count: 187, color: "hsl(187, 92%, 42%)" },
+  { range: "15-30 days", count: 142, color: "hsl(45, 93%, 47%)" },
+  { range: "31-60 days", count: 89, color: "hsl(18, 100%, 60%)" },
+  { range: "60+ days", count: 48, color: "hsl(0, 84%, 60%)" },
+];
+
+const automationStats = [
+  { label: "AI-Prioritized Cases", value: "78%", icon: Brain, color: "text-secondary" },
+  { label: "Automated Workflows", value: "1,247", icon: Workflow, color: "text-primary" },
+  { label: "RPA Integrations", value: "12", icon: Bot, color: "text-success" },
 ];
 
 export default function Analytics() {
-  const { data: stats, isLoading: statsLoading } = useDashboardStats();
-  const { data: accounts } = useAccounts();
+  const { isDemoMode } = useAuth();
+  const { data: realStats, isLoading: statsLoading } = useDashboardStats();
+  
+  const stats = isDemoMode ? mockDashboardStats : realStats;
+  const loading = !isDemoMode && statsLoading;
 
   const formatCurrency = (value: number) => {
     if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
@@ -76,24 +90,56 @@ export default function Analytics() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Analytics Dashboard</h1>
-          <p className="text-muted-foreground">Performance tracking and insights</p>
+          <p className="text-muted-foreground">Performance tracking & AI insights</p>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-success/10 border border-success/30">
-          <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-          <span className="text-sm font-medium text-success">Real-time data</span>
+        <div className="flex items-center gap-3">
+          <Badge className="bg-secondary/10 text-secondary border-secondary/30">
+            <Brain className="w-3 h-3 mr-1" />
+            ML Models Active
+          </Badge>
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-success/10 border border-success/30">
+            <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
+            <span className="text-sm font-medium text-success">Real-time data</span>
+          </div>
         </div>
+      </div>
+
+      {/* Automation Stats Row */}
+      <div className="grid grid-cols-3 gap-4">
+        {automationStats.map((stat, i) => (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+          >
+            <Card className="glass-card border-border/50">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-4">
+                  <div className={`w-12 h-12 rounded-xl bg-muted/50 flex items-center justify-center ${stat.color}`}>
+                    <stat.icon className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{stat.value}</p>
+                    <p className="text-sm text-muted-foreground">{stat.label}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-4 gap-4">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <Card className="glass-card border-border/50">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Outstanding</p>
                   <p className="text-2xl font-bold mt-1">
-                    {statsLoading ? "..." : formatCurrency(stats?.totalOutstanding || 0)}
+                    {loading ? "..." : formatCurrency(stats?.totalOutstanding || 0)}
                   </p>
                 </div>
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -109,7 +155,7 @@ export default function Analytics() {
           </Card>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
           <Card className="glass-card border-border/50">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
@@ -130,7 +176,7 @@ export default function Analytics() {
           </Card>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
           <Card className="glass-card border-border/50">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
@@ -151,7 +197,7 @@ export default function Analytics() {
           </Card>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
           <Card className="glass-card border-border/50">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
@@ -175,16 +221,20 @@ export default function Analytics() {
 
       {/* Charts Row 1 */}
       <div className="grid grid-cols-3 gap-6">
-        {/* Recovery Trend */}
+        {/* Recovery Trend with AI */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: 0.7 }}
           className="col-span-2"
         >
           <Card className="glass-card border-border/50">
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg font-semibold">Recovery Trend</CardTitle>
+              <Badge variant="outline" className="text-xs">
+                <Brain className="w-3 h-3 mr-1" />
+                AI-Assisted
+              </Badge>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={280}>
@@ -193,6 +243,10 @@ export default function Analytics() {
                     <linearGradient id="colorRecovered" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="hsl(142, 72%, 45%)" stopOpacity={0.3} />
                       <stop offset="95%" stopColor="hsl(142, 72%, 45%)" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="colorAI" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(187, 92%, 42%)" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="hsl(187, 92%, 42%)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(230, 20%, 18%)" />
@@ -213,7 +267,16 @@ export default function Analytics() {
                     fillOpacity={1}
                     fill="url(#colorRecovered)"
                     strokeWidth={2}
-                    name="Recovered"
+                    name="Total Recovered"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="ai_assisted"
+                    stroke="hsl(187, 92%, 42%)"
+                    fillOpacity={1}
+                    fill="url(#colorAI)"
+                    strokeWidth={2}
+                    name="AI Assisted"
                   />
                   <Line type="monotone" dataKey="target" stroke="hsl(215, 20%, 55%)" strokeDasharray="5 5" name="Target" />
                 </AreaChart>
@@ -223,7 +286,7 @@ export default function Analytics() {
         </motion.div>
 
         {/* Risk Distribution */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}>
           <Card className="glass-card border-border/50 h-full">
             <CardHeader>
               <CardTitle className="text-lg font-semibold">Risk Distribution</CardTitle>
@@ -270,7 +333,7 @@ export default function Analytics() {
       {/* Charts Row 2 */}
       <div className="grid grid-cols-2 gap-6">
         {/* Resolution Times */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}>
           <Card className="glass-card border-border/50">
             <CardHeader>
               <CardTitle className="text-lg font-semibold">Resolution Time Distribution</CardTitle>
@@ -288,7 +351,11 @@ export default function Analytics() {
                       borderRadius: "8px",
                     }}
                   />
-                  <Bar dataKey="count" fill="hsl(187, 92%, 42%)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                    {resolutionTimes.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -296,7 +363,7 @@ export default function Analytics() {
         </motion.div>
 
         {/* Agent Performance */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.0 }}>
           <Card className="glass-card border-border/50">
             <CardHeader>
               <CardTitle className="text-lg font-semibold">Top Performing Agents</CardTitle>

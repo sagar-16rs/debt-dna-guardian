@@ -6,6 +6,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
+  isDemoMode: boolean;
   signOut: () => Promise<void>;
 }
 
@@ -13,6 +14,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
   isLoading: true,
+  isDemoMode: false,
   signOut: async () => {},
 });
 
@@ -20,8 +22,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDemoMode, setIsDemoMode] = useState(false);
 
   useEffect(() => {
+    // Check for demo mode
+    const demoMode = localStorage.getItem("demo_mode") === "true";
+    setIsDemoMode(demoMode);
+
+    if (demoMode) {
+      setIsLoading(false);
+      return;
+    }
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -44,11 +56,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = async () => {
+    localStorage.removeItem("demo_mode");
+    setIsDemoMode(false);
     await supabase.auth.signOut();
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, isLoading, signOut }}>
+    <AuthContext.Provider value={{ user, session, isLoading, isDemoMode, signOut }}>
       {children}
     </AuthContext.Provider>
   );

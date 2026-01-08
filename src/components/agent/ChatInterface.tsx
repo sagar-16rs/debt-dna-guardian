@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Paperclip, Copy, AlertTriangle, Lock } from "lucide-react";
+import { Send, Paperclip, Copy, AlertTriangle, Lock, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -12,10 +12,6 @@ interface Message {
   content: string;
   timestamp: string;
   blocked?: boolean;
-  violation?: {
-    message: string;
-    suggestion: string;
-  };
 }
 
 interface ChatInterfaceProps {
@@ -29,6 +25,7 @@ interface ChatInterfaceProps {
   messages: Message[];
   complianceScore: number;
   isBlocked: boolean;
+  onMessageChange?: (message: string) => void;
 }
 
 export function ChatInterface({
@@ -36,10 +33,15 @@ export function ChatInterface({
   messages,
   complianceScore,
   isBlocked,
+  onMessageChange,
 }: ChatInterfaceProps) {
-  const [inputValue, setInputValue] = useState(
-    "Listen, you need to pay this by Friday or we're sending it to legal. We can't keep extending this."
-  );
+  const [inputValue, setInputValue] = useState("");
+
+  useEffect(() => {
+    if (onMessageChange) {
+      onMessageChange(inputValue);
+    }
+  }, [inputValue, onMessageChange]);
 
   const getScoreColor = (score: number) => {
     if (score >= 70) return "text-success";
@@ -54,7 +56,7 @@ export function ChatInterface({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-muted to-card-elevated flex items-center justify-center">
-              <span className="text-lg font-bold">AC</span>
+              <span className="text-lg font-bold">{account.name.split(" ").map(n => n[0]).join("")}</span>
             </div>
             <div>
               <h2 className="text-lg font-semibold">{account.name}</h2>
@@ -71,9 +73,18 @@ export function ChatInterface({
               <p className="text-xs text-muted-foreground uppercase">Lifetime Value</p>
               <p className="text-lg font-bold">{account.ltv}</p>
             </div>
-            <div className="px-3 py-1.5 rounded-lg bg-warning/10 border border-warning/30 text-center">
+            <div className={cn(
+              "px-3 py-1.5 rounded-lg text-center border",
+              account.churnRisk === "High" ? "bg-critical/10 border-critical/30" :
+              account.churnRisk === "Medium" ? "bg-warning/10 border-warning/30" :
+              "bg-success/10 border-success/30"
+            )}>
               <p className="text-xs text-muted-foreground uppercase">Churn Risk</p>
-              <p className="text-lg font-bold text-warning">{account.churnRisk}</p>
+              <p className={cn(
+                "text-lg font-bold",
+                account.churnRisk === "High" ? "text-critical" :
+                account.churnRisk === "Medium" ? "text-warning" : "text-success"
+              )}>{account.churnRisk}</p>
             </div>
           </div>
         </div>
@@ -131,12 +142,12 @@ export function ChatInterface({
               <div className="flex-1">
                 <p className="font-semibold text-critical">Tone Violation Detected</p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Your draft is too aggressive for a "Value Retention" client. Avoid legal threats at this stage.
+                  Your draft contains language that may violate compliance guidelines. Please revise before sending.
                 </p>
                 <p className="text-sm mt-2">
                   <span className="text-muted-foreground">Suggestion: </span>
                   <span className="text-secondary italic">
-                    "Let's secure your account status by setting up a payment plan for Friday."
+                    "Let's work together to find a solution that works for your situation."
                   </span>
                 </p>
               </div>
@@ -144,10 +155,24 @@ export function ChatInterface({
           </motion.div>
         )}
 
+        {/* Compliance Status */}
+        {!isBlocked && inputValue.length > 10 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="p-3 rounded-xl bg-success/10 border border-success/30"
+          >
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-success" />
+              <span className="text-sm text-success font-medium">Message meets compliance standards</span>
+            </div>
+          </motion.div>
+        )}
+
         {/* AI Auditor Note */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span className="text-secondary">●</span>
-          AI Auditor analyzed payment history. 3 prior extensions granted.
+          AI Auditor analyzing message in real-time...
         </div>
       </div>
 
@@ -160,7 +185,7 @@ export function ChatInterface({
           <Textarea
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Type your message..."
+            placeholder="Type your message... (Try typing 'legal' to see compliance check)"
             className="border-0 bg-transparent resize-none min-h-[80px] focus-visible:ring-0"
           />
           <div className="flex items-center justify-between p-3 pt-0">
@@ -179,7 +204,7 @@ export function ChatInterface({
               )}
             </div>
             <Button
-              disabled={isBlocked}
+              disabled={isBlocked || inputValue.length === 0}
               className={cn(
                 "gap-2",
                 isBlocked

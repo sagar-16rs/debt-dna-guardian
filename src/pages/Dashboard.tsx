@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Globe, BarChart3, TrendingUp, Brain, Sparkles, Loader2 } from "lucide-react";
+import { Search, Globe, BarChart3, TrendingUp, Brain, Loader2 } from "lucide-react";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { WorldMap } from "@/components/dashboard/WorldMap";
 import { LiveTicker } from "@/components/dashboard/LiveTicker";
@@ -8,19 +8,26 @@ import { AccountCard } from "@/components/dashboard/AccountCard";
 import { AIInsightPanel } from "@/components/dashboard/AIInsightPanel";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 import { useAccounts, useDashboardStats, useAccountWithPredictions } from "@/hooks/useAccounts";
 import { useAIAnalysis } from "@/hooks/useAIAnalysis";
+import { mockAccounts, mockPredictions, mockWorkflows, mockDashboardStats } from "@/data/mockData";
 import { toast } from "sonner";
 
 export default function Dashboard() {
+  const { isDemoMode } = useAuth();
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   
-  const { data: accounts, isLoading: accountsLoading } = useAccounts();
-  const { data: stats, isLoading: statsLoading } = useDashboardStats();
-  const { data: selectedData, isLoading: selectedLoading } = useAccountWithPredictions(selectedAccountId);
+  // Use real data or mock data based on demo mode
+  const { data: realAccounts, isLoading: accountsLoading } = useAccounts();
+  const { data: realStats, isLoading: statsLoading } = useDashboardStats();
+  const { data: selectedData } = useAccountWithPredictions(isDemoMode ? null : selectedAccountId);
   const aiAnalysis = useAIAnalysis();
+
+  const accounts = isDemoMode ? mockAccounts : (realAccounts || []);
+  const stats = isDemoMode ? mockDashboardStats : realStats;
 
   const filteredAccounts = accounts?.filter(
     (acc) =>
@@ -28,7 +35,51 @@ export default function Dashboard() {
       acc.account_id.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Get selected account data for demo mode
+  const getSelectedAccountData = () => {
+    if (!selectedAccountId) return null;
+    
+    if (isDemoMode) {
+      const account = mockAccounts.find((a) => a.id === selectedAccountId);
+      if (!account) return null;
+      
+      const prediction = mockPredictions[selectedAccountId];
+      const workflows = mockWorkflows.filter((w) => w.account_id === selectedAccountId);
+      
+      return {
+        account,
+        predictions: prediction ? [{
+          id: "p1",
+          account_id: selectedAccountId,
+          prediction_type: "recovery",
+          prediction_value: prediction.recovery_probability,
+          recommended_strategy: prediction.recommended_strategy,
+          recommended_action: prediction.recommended_action,
+          confidence_score: prediction.confidence_score,
+          model_version: "v1.0",
+          factors: prediction.factors,
+          created_at: new Date().toISOString(),
+        }] : [],
+        workflows,
+      };
+    }
+    
+    return selectedData;
+  };
+
+  const currentSelectedData = getSelectedAccountData();
+
   const handleAnalyzeAccount = async (accountId: string) => {
+    if (isDemoMode) {
+      setIsAnalyzing(true);
+      // Simulate AI analysis delay
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      toast.success("AI analysis complete!");
+      setSelectedAccountId(accountId);
+      setIsAnalyzing(false);
+      return;
+    }
+
     const account = accounts?.find((a) => a.id === accountId);
     if (!account) return;
 
@@ -62,6 +113,8 @@ export default function Dashboard() {
     return `$${value}`;
   };
 
+  const loading = !isDemoMode && (accountsLoading || statsLoading);
+
   return (
     <div className="flex h-[calc(100vh-64px)]">
       {/* Main Content */}
@@ -84,13 +137,13 @@ export default function Dashboard() {
         <div className="grid grid-cols-4 gap-4 mb-6">
           <MetricCard
             title="Total Outstanding"
-            value={statsLoading ? "..." : formatCurrency(stats?.totalOutstanding || 0)}
+            value={loading ? "..." : formatCurrency(stats?.totalOutstanding || 0)}
             subtitle={`${stats?.totalAccounts || 0} accounts`}
             variant="primary"
           />
           <MetricCard
             title="At-Risk Revenue"
-            value={statsLoading ? "..." : formatCurrency(stats?.atRiskAmount || 0)}
+            value={loading ? "..." : formatCurrency(stats?.atRiskAmount || 0)}
             subtitle={`${stats?.criticalAccounts || 0} critical`}
             variant="warning"
           />
@@ -118,7 +171,7 @@ export default function Dashboard() {
             </div>
             
             <div className="flex-1 overflow-auto space-y-3 pr-2">
-              {accountsLoading ? (
+              {loading ? (
                 <div className="flex items-center justify-center h-32">
                   <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
                 </div>
@@ -132,7 +185,7 @@ export default function Dashboard() {
                     isSelected={selectedAccountId === account.id}
                     onSelect={() => setSelectedAccountId(account.id)}
                     onAnalyze={() => handleAnalyzeAccount(account.id)}
-                    isAnalyzing={aiAnalysis.isPending}
+                    isAnalyzing={isAnalyzing || aiAnalysis.isPending}
                   />
                 ))
               )}
@@ -177,11 +230,11 @@ export default function Dashboard() {
 
       {/* AI Insight Panel */}
       <AnimatePresence>
-        {selectedAccountId && selectedData && (
+        {selectedAccountId && currentSelectedData && (
           <AIInsightPanel
-            account={selectedData.account}
-            predictions={selectedData.predictions}
-            workflows={selectedData.workflows}
+            account={currentSelectedData.account as any}
+            predictions={currentSelectedData.predictions as any}
+            workflows={currentSelectedData.workflows as any}
             onClose={() => setSelectedAccountId(null)}
           />
         )}
