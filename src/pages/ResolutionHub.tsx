@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Settings, Sparkles, Check, ArrowRight, Calendar, CreditCard, Send, Search, BarChart3, Shield, Brain, Bot } from "lucide-react";
+import { Settings, Sparkles, Check, ArrowRight, Calendar, CreditCard, Send, Search, BarChart3, Shield, Brain, Bot, MessageCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProgressStepper } from "@/components/resolution/ProgressStepper";
 import { PaymentDateSlider } from "@/components/resolution/PaymentDateSlider";
 import { LogisticsInsight } from "@/components/resolution/LogisticsInsight";
 import { AccountHealth } from "@/components/resolution/AccountHealth";
+import { AIChatAssistant } from "@/components/agent/AIChatAssistant";
 import { toast } from "sonner";
 
 const steps = [
@@ -19,6 +20,15 @@ const steps = [
 export default function ResolutionHub() {
   const [selectedOption, setSelectedOption] = useState<"split" | "custom">("split");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
+  const accountContext = {
+    name: "Acme Logistics Corp",
+    location: "Memphis, TN",
+    type: "Logistics",
+    ltv: "$2.4M",
+    churnRisk: "Low",
+  };
 
   const handleConfirmProposal = async () => {
     setIsProcessing(true);
@@ -291,6 +301,18 @@ export default function ResolutionHub() {
         </div>
       </footer>
 
+      {/* AI Chat Assistant Floating Panel */}
+      {isChatOpen && (
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 20, scale: 0.95 }}
+          className="fixed bottom-20 right-6 w-96 h-[500px] z-50 shadow-2xl rounded-xl overflow-hidden"
+        >
+          <AIChatAssistant accountContext={accountContext} />
+        </motion.div>
+      )}
+
       {/* Bottom Navigation Dock */}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2">
         <div className="flex items-center gap-1 p-1.5 glass-card rounded-full">
@@ -308,6 +330,24 @@ export default function ResolutionHub() {
           </button>
         </div>
       </div>
+
+      {/* Floating AI Chat Button */}
+      <motion.button
+        onClick={() => setIsChatOpen(!isChatOpen)}
+        className={`fixed bottom-4 right-6 p-4 rounded-full shadow-lg transition-all z-50 ${
+          isChatOpen 
+            ? "bg-muted text-foreground" 
+            : "bg-gradient-to-br from-secondary to-primary text-primary-foreground glow-primary"
+        }`}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        {isChatOpen ? (
+          <X className="w-6 h-6" />
+        ) : (
+          <MessageCircle className="w-6 h-6" />
+        )}
+      </motion.button>
     </div>
   );
 }
