@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { TaskQueue } from "@/components/agent/TaskQueue";
 import { ChatInterface } from "@/components/agent/ChatInterface";
 import { ComplianceAuditor } from "@/components/agent/ComplianceAuditor";
+import { AIChatAssistant } from "@/components/agent/AIChatAssistant";
 import { mockAccounts, mockMessages, mockAnalysisLogs, mockSuggestedScripts } from "@/data/mockData";
 
 const mockTasks = mockAccounts.slice(0, 5).map((acc, i) => ({
@@ -50,6 +51,12 @@ export default function AgentPortal() {
     }
   };
 
+  const [draftMessage, setDraftMessage] = useState("");
+
+  const handleUseAIResponse = (content: string) => {
+    setDraftMessage(content);
+  };
+
   return (
     <div className="flex h-[calc(100vh-64px)]">
       <TaskQueue
@@ -57,13 +64,25 @@ export default function AgentPortal() {
         activeTaskId={activeTaskId}
         onTaskSelect={setActiveTaskId}
       />
-      <ChatInterface
-        account={mockAccount}
-        messages={mockMessages}
-        complianceScore={complianceScore}
-        isBlocked={isBlocked}
-        onMessageChange={handleMessageChange}
-      />
+      <div className="flex-1 flex">
+        <div className="flex-1">
+          <ChatInterface
+            account={mockAccount}
+            messages={mockMessages}
+            complianceScore={complianceScore}
+            isBlocked={isBlocked}
+            onMessageChange={handleMessageChange}
+            draftMessage={draftMessage}
+            onDraftChange={setDraftMessage}
+          />
+        </div>
+        <div className="w-80 border-l border-border/50 p-3">
+          <AIChatAssistant
+            accountContext={mockAccount}
+            onUseResponse={handleUseAIResponse}
+          />
+        </div>
+      </div>
       <ComplianceAuditor
         score={complianceScore}
         empathy={complianceScore >= 70 ? "high" : complianceScore >= 40 ? "medium" : "low"}
