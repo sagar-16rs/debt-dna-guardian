@@ -26,6 +26,8 @@ interface ChatInterfaceProps {
   complianceScore: number;
   isBlocked: boolean;
   onMessageChange?: (message: string) => void;
+  draftMessage?: string;
+  onDraftChange?: (message: string) => void;
 }
 
 export function ChatInterface({
@@ -34,14 +36,30 @@ export function ChatInterface({
   complianceScore,
   isBlocked,
   onMessageChange,
+  draftMessage,
+  onDraftChange,
 }: ChatInterfaceProps) {
   const [inputValue, setInputValue] = useState("");
+
+  // Sync with external draft message (from AI assistant)
+  useEffect(() => {
+    if (draftMessage !== undefined && draftMessage !== inputValue) {
+      setInputValue(draftMessage);
+    }
+  }, [draftMessage]);
 
   useEffect(() => {
     if (onMessageChange) {
       onMessageChange(inputValue);
     }
   }, [inputValue, onMessageChange]);
+
+  const handleInputChange = (value: string) => {
+    setInputValue(value);
+    if (onDraftChange) {
+      onDraftChange(value);
+    }
+  };
 
   const getScoreColor = (score: number) => {
     if (score >= 70) return "text-success";
@@ -184,7 +202,7 @@ export function ChatInterface({
         )}>
           <Textarea
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={(e) => handleInputChange(e.target.value)}
             placeholder="Type your message... (Try typing 'legal' to see compliance check)"
             className="border-0 bg-transparent resize-none min-h-[80px] focus-visible:ring-0"
           />
