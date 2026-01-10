@@ -1,8 +1,10 @@
-# Welcome to Lovable project
+# Welcome to project DNA DEBT 
 
 ## Project info
 
 **URL**: https://lovable.dev/projects/e520da87-f52e-4508-b9ee-b9f63946a4b9?magic_link=mc_80890ceb-5ee6-46e7-af7d-512058862b11
+
+FedEx NEXUS is a next-generation financial command center designed to modernize enterprise debt recovery. Unlike legacy tools that simply list overdue invoices, NEXUS uses an Agentic AI Core ("Cortex") to analyze Debt DNA—predicting payment probability, automating negotiation strategies via chat, and simulating cash flow outcomes. Built with a "Glass Box" architecture, it unifies fragmented ERP data into a single, high-performance interface for faster resolution and reduced customer churn
 
 ## How can I edit this code?
 
