@@ -38,7 +38,8 @@ Guidelines:
 - Acknowledge customer concerns
 - Maintain professional tone throughout
 - Suggest flexible payment options when appropriate
-- Be concise and actionable in your responses`;
+- Be concise and actionable in your responses
+- IMPORTANT: Use only plain text in your responses. Do not use markdown formatting like asterisks, bullet points, or special characters. Write in clear, simple sentences.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

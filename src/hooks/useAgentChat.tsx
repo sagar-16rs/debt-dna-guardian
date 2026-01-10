@@ -111,8 +111,19 @@ export function useAgentChat(accountContext?: AccountContext) {
 
           try {
             const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content;
-            if (content) upsertAssistant(content);
+            let content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              // Strip markdown formatting and special characters
+              content = content
+                .replace(/\*\*/g, '')  // Bold
+                .replace(/\*/g, '')    // Italic
+                .replace(/#{1,6}\s/g, '') // Headers
+                .replace(/`/g, '')     // Code
+                .replace(/~~/g, '')    // Strikethrough
+                .replace(/>\s/g, '')   // Blockquotes
+                .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1'); // Links
+              upsertAssistant(content);
+            }
           } catch {
             buffer = line + "\n" + buffer;
             break;
@@ -129,13 +140,21 @@ export function useAgentChat(accountContext?: AccountContext) {
           if (!raw.startsWith("data: ")) continue;
           const jsonStr = raw.slice(6).trim();
           if (jsonStr === "[DONE]") continue;
-          try {
-            const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content;
-            if (content) upsertAssistant(content);
-          } catch {
-            /* ignore */
+        try {
+          const parsed = JSON.parse(jsonStr);
+          let content = parsed.choices?.[0]?.delta?.content;
+          if (content) {
+            content = content
+              .replace(/\*\*/g, '')
+              .replace(/\*/g, '')
+              .replace(/#{1,6}\s/g, '')
+              .replace(/`/g, '')
+              .replace(/~~/g, '')
+              .replace(/>\s/g, '')
+              .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+            upsertAssistant(content);
           }
+        } catch { /* ignore */ }
         }
       }
     } catch (err) {
