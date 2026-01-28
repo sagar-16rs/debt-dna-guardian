@@ -91,10 +91,14 @@ export function AppLayout({ children }: AppLayoutProps) {
           })}
         </nav>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-success/10 border border-success/30">
             <Zap className="w-4 h-4 text-success" />
             <span className="text-xs font-medium text-success">AI Active</span>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/10 border border-secondary/30">
+            <Shield className="w-4 h-4 text-secondary" />
+            <span className="text-xs font-medium text-secondary">RPA</span>
           </div>
           <button className="relative p-2 rounded-lg hover:bg-muted/50 transition-colors">
             <Bell className="w-5 h-5 text-muted-foreground" />
