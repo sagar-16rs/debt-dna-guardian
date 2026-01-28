@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Settings, Sparkles, Check, ArrowRight, Calendar, CreditCard, Send, Search, BarChart3, Shield, Brain, Bot, MessageCircle, X } from "lucide-react";
+import { Settings, Sparkles, Check, ArrowRight, Calendar, CreditCard, Send, Search, BarChart3, Shield, Brain, Bot, MessageCircle, X, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProgressStepper } from "@/components/resolution/ProgressStepper";
@@ -8,6 +8,7 @@ import { PaymentDateSlider } from "@/components/resolution/PaymentDateSlider";
 import { LogisticsInsight } from "@/components/resolution/LogisticsInsight";
 import { AccountHealth } from "@/components/resolution/AccountHealth";
 import { AIChatAssistant } from "@/components/agent/AIChatAssistant";
+import { SecureVaultModal } from "@/components/resolution/SecureVaultModal";
 import { toast } from "sonner";
 
 const steps = [
@@ -21,6 +22,7 @@ export default function ResolutionHub() {
   const [selectedOption, setSelectedOption] = useState<"split" | "custom">("split");
   const [isProcessing, setIsProcessing] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isVaultOpen, setIsVaultOpen] = useState(false);
 
   const accountContext = {
     name: "Acme Logistics Corp",
@@ -86,7 +88,7 @@ export default function ResolutionHub() {
           </div>
           <div className="flex items-center gap-2">
             <Badge className="bg-primary/20 text-primary border border-primary/30 animate-pulse">
-              ● Action Required
+              Action Required
             </Badge>
             <Badge variant="outline" className="border-secondary/30 text-secondary">
               <Bot className="w-3 h-3 mr-1" />
@@ -135,7 +137,7 @@ export default function ResolutionHub() {
                   <Check className="w-4 h-4 text-secondary" />
                 </div>
                 <p className="text-2xl font-bold mt-1 text-secondary">-$50.00</p>
-                <p className="text-xs text-success mt-1">▶ Late Delivery Detected by AI</p>
+                <p className="text-xs text-success mt-1">Late Delivery Detected by AI</p>
               </motion.div>
 
               <motion.div
@@ -162,9 +164,9 @@ export default function ResolutionHub() {
                   <Sparkles className="w-5 h-5 text-secondary" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold">Let's resolve this together.</h3>
+                  <h3 className="text-lg font-semibold">Lets resolve this together.</h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    We've noticed you're a valued partner. Our AI has unlocked flexible options to help you clear this balance while preserving your account standing.
+                    Weve noticed youre a valued partner. Our AI has unlocked flexible options to help you clear this balance while preserving your account standing.
                   </p>
                 </div>
               </div>
@@ -220,24 +222,35 @@ export default function ResolutionHub() {
                 </div>
               </div>
 
-              {/* Confirm Button */}
-              <Button 
-                className="w-full mt-6 bg-primary hover:bg-primary/90 glow-primary h-12 text-base"
-                onClick={handleConfirmProposal}
-                disabled={isProcessing}
-              >
-                {isProcessing ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Processing...
-                  </div>
-                ) : (
-                  <>
-                    Confirm Proposal
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </>
-                )}
-              </Button>
+              {/* Action Buttons */}
+              <div className="mt-6 flex gap-3">
+                <Button 
+                  className="flex-1 bg-primary hover:bg-primary/90 glow-primary h-12 text-base"
+                  onClick={handleConfirmProposal}
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Processing...
+                    </div>
+                  ) : (
+                    <>
+                      Confirm Proposal
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </>
+                  )}
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  className="h-12 px-6 border-secondary/50 hover:border-secondary hover:bg-secondary/10"
+                  onClick={() => setIsVaultOpen(true)}
+                >
+                  <Link className="w-4 h-4 mr-2" />
+                  Generate Secure Link
+                </Button>
+              </div>
             </motion.div>
           </div>
 
@@ -312,6 +325,9 @@ export default function ResolutionHub() {
           <AIChatAssistant accountContext={accountContext} />
         </motion.div>
       )}
+
+      {/* Secure Vault Modal */}
+      <SecureVaultModal open={isVaultOpen} onOpenChange={setIsVaultOpen} />
 
       {/* Bottom Navigation Dock */}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2">

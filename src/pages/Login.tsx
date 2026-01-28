@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Shield, Mail, Lock, User, ArrowRight, Loader2, Play } from "lucide-react";
+import { Shield, Mail, Lock, User, ArrowRight, Loader2, BarChart3, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,10 +16,11 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
 
-  const handleDemoMode = () => {
+  const handleRoleLogin = (role: "director" | "agent") => {
     localStorage.setItem("demo_mode", "true");
-    toast.success("Demo mode activated!");
-    navigate("/");
+    localStorage.setItem("demo_role", role);
+    toast.success(role === "director" ? "Welcome, Global Operations Director" : "Welcome, Recovery Agent");
+    navigate(role === "director" ? "/" : "/agent-portal");
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -71,104 +72,57 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left Panel - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-background via-card to-muted/30 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
-        
-        <div className="relative z-10 flex flex-col justify-center px-16">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8"
-          >
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center glow-primary">
-                <Shield className="w-8 h-8 text-primary-foreground" />
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-card to-muted/30 relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-radial from-primary/20 to-transparent rounded-full blur-3xl" />
+      <div className="absolute top-20 right-20 w-64 h-64 bg-gradient-radial from-secondary/20 to-transparent rounded-full blur-3xl" />
+      
+      {/* Main Content */}
+      <div className="flex-1 flex items-center justify-center p-8 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full max-w-lg"
+        >
+          {/* Logo & Branding */}
+          <div className="text-center mb-10">
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center justify-center gap-4 mb-6"
+            >
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center glow-primary">
+                <Shield className="w-10 h-10 text-primary-foreground" />
               </div>
-              <div>
-                <h1 className="text-4xl font-bold tracking-tight">Debt DNA</h1>
-                <p className="text-muted-foreground">Value Preservation System</p>
-              </div>
-            </div>
-          </motion.div>
+            </motion.div>
+            <h1 className="text-4xl font-bold tracking-tight mb-2">FedEx NEXUS</h1>
+            <p className="text-lg text-muted-foreground">Debt DNA Value Preservation System</p>
+          </div>
 
+          {/* Role-Based Login Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="space-y-6"
-          >
-            <h2 className="text-3xl font-semibold leading-tight">
-              AI-Powered Debt Recovery
-              <br />
-              <span className="gradient-text-primary">for Modern Enterprises</span>
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-md">
-              Transform collections into customer retention with intelligent automation, 
-              compliance-first workflows, and predictive analytics.
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="mt-12 grid grid-cols-2 gap-6"
-          >
-            {[
-              { label: "Recovery Rate", value: "94.2%" },
-              { label: "Compliance Score", value: "99.8%" },
-              { label: "Time to Resolution", value: "-47%" },
-              { label: "Customer Retention", value: "+62%" },
-            ].map((stat, i) => (
-              <div key={i} className="glass-card p-4 rounded-xl">
-                <p className="text-2xl font-bold gradient-text-primary">{stat.value}</p>
-                <p className="text-sm text-muted-foreground">{stat.label}</p>
-              </div>
-            ))}
-          </motion.div>
-        </div>
-
-        {/* Decorative elements */}
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-radial from-primary/20 to-transparent rounded-full blur-3xl" />
-        <div className="absolute top-20 right-20 w-64 h-64 bg-gradient-radial from-secondary/20 to-transparent rounded-full blur-3xl" />
-      </div>
-
-      {/* Right Panel - Login Form */}
-      <div className="flex-1 flex items-center justify-center p-8">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="w-full max-w-md"
-        >
-          <div className="lg:hidden flex items-center gap-3 mb-8 justify-center">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center glow-primary">
-              <Shield className="w-6 h-6 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold">Debt DNA</h1>
-              <p className="text-xs text-muted-foreground">Value Preservation System</p>
-            </div>
-          </div>
-
-          {/* Demo Mode Button */}
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="mb-8"
+            className="space-y-4 mb-8"
           >
             <Button
-              onClick={handleDemoMode}
-              className="w-full h-14 bg-gradient-to-r from-secondary to-secondary/80 hover:from-secondary/90 hover:to-secondary/70 text-base font-semibold shadow-lg"
+              onClick={() => handleRoleLogin("director")}
+              className="w-full h-16 bg-gradient-to-r from-primary to-primary-glow hover:from-primary/90 hover:to-primary-glow/90 text-lg font-semibold shadow-lg glow-primary"
             >
-              <Play className="w-5 h-5 mr-2" />
-              Launch Demo Mode
+              <BarChart3 className="w-6 h-6 mr-3" />
+              Login as Global Operations Director
             </Button>
-            <p className="text-center text-xs text-muted-foreground mt-2">
-              Experience the full platform without signing up
-            </p>
+            
+            <Button
+              onClick={() => handleRoleLogin("agent")}
+              variant="outline"
+              className="w-full h-16 border-2 border-secondary/50 hover:border-secondary hover:bg-secondary/10 text-lg font-semibold"
+            >
+              <MessageSquare className="w-6 h-6 mr-3" />
+              Login as Recovery Agent
+            </Button>
           </motion.div>
 
           <div className="relative mb-8">
@@ -176,18 +130,18 @@ export default function Login() {
               <div className="w-full border-t border-border/50" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">or sign in</span>
+              <span className="bg-background px-4 text-muted-foreground">or sign in with credentials</span>
             </div>
           </div>
 
           <Tabs defaultValue="login" className="w-full">
-            <TabsList className="w-full mb-8 bg-muted/50">
+            <TabsList className="w-full mb-6 bg-muted/50">
               <TabsTrigger value="login" className="flex-1">Sign In</TabsTrigger>
               <TabsTrigger value="register" className="flex-1">Create Account</TabsTrigger>
             </TabsList>
 
             <TabsContent value="login">
-              <form onSubmit={handleLogin} className="space-y-6">
+              <form onSubmit={handleLogin} className="space-y-5">
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-sm font-medium">Email</Label>
                   <div className="relative">
@@ -195,7 +149,7 @@ export default function Login() {
                     <Input
                       id="email"
                       type="email"
-                      placeholder="agent@company.com"
+                      placeholder="agent@fedex.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="pl-10 h-12 bg-card/50 border-border/50"
@@ -211,7 +165,7 @@ export default function Login() {
                     <Input
                       id="password"
                       type="password"
-                      placeholder="••••••••"
+                      placeholder="Enter password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="pl-10 h-12 bg-card/50 border-border/50"
@@ -238,7 +192,7 @@ export default function Login() {
             </TabsContent>
 
             <TabsContent value="register">
-              <form onSubmit={handleSignUp} className="space-y-6">
+              <form onSubmit={handleSignUp} className="space-y-5">
                 <div className="space-y-2">
                   <Label htmlFor="fullName" className="text-sm font-medium">Full Name</Label>
                   <div className="relative">
@@ -262,7 +216,7 @@ export default function Login() {
                     <Input
                       id="signupEmail"
                       type="email"
-                      placeholder="agent@company.com"
+                      placeholder="agent@fedex.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="pl-10 h-12 bg-card/50 border-border/50"
@@ -278,7 +232,7 @@ export default function Login() {
                     <Input
                       id="signupPassword"
                       type="password"
-                      placeholder="••••••••"
+                      placeholder="Create password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="pl-10 h-12 bg-card/50 border-border/50"
@@ -305,12 +259,16 @@ export default function Login() {
               </form>
             </TabsContent>
           </Tabs>
-
-          <p className="text-center text-sm text-muted-foreground mt-8">
-            By continuing, you agree to our Terms of Service and Privacy Policy.
-          </p>
         </motion.div>
       </div>
+
+      {/* Footer */}
+      <footer className="relative z-10 py-6 text-center">
+        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <Lock className="w-4 h-4" />
+          <span>Secured by FedEx SSO / VPC Encrypted</span>
+        </div>
+      </footer>
     </div>
   );
 }

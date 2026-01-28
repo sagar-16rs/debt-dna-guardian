@@ -6,6 +6,9 @@ import { WorldMap } from "@/components/dashboard/WorldMap";
 import { LiveTicker } from "@/components/dashboard/LiveTicker";
 import { AccountCard } from "@/components/dashboard/AccountCard";
 import { AIInsightPanel } from "@/components/dashboard/AIInsightPanel";
+import { ERPSyncButton } from "@/components/dashboard/ERPSyncButton";
+import { AgencyPerformance } from "@/components/dashboard/AgencyPerformance";
+import { AISkeletonLoader } from "@/components/dashboard/AISkeletonLoader";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,6 +22,7 @@ export default function Dashboard() {
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showAILoader, setShowAILoader] = useState(false);
   
   // Use real data or mock data based on demo mode
   const { data: realAccounts, isLoading: accountsLoading } = useAccounts();
@@ -72,11 +76,8 @@ export default function Dashboard() {
   const handleAnalyzeAccount = async (accountId: string) => {
     if (isDemoMode) {
       setIsAnalyzing(true);
-      // Simulate AI analysis delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      toast.success("AI analysis complete!");
+      setShowAILoader(true);
       setSelectedAccountId(accountId);
-      setIsAnalyzing(false);
       return;
     }
 
@@ -107,6 +108,12 @@ export default function Dashboard() {
     }
   };
 
+  const handleAILoaderComplete = () => {
+    setShowAILoader(false);
+    setIsAnalyzing(false);
+    toast.success("AI analysis complete!");
+  };
+
   const formatCurrency = (value: number) => {
     if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
     if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
@@ -130,6 +137,7 @@ export default function Dashboard() {
               className="pl-10 h-11 bg-card/50 border-border/50 text-sm"
             />
           </div>
+          <ERPSyncButton />
           <LiveTicker />
         </div>
 
@@ -164,32 +172,37 @@ export default function Dashboard() {
         {/* Two Column Layout */}
         <div className="flex-1 grid grid-cols-5 gap-6">
           {/* Account List */}
-          <div className="col-span-2 glass-card rounded-xl p-4 overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-sm">Priority Accounts</h3>
-              <span className="text-xs text-muted-foreground">{accounts?.length || 0} total</span>
+          <div className="col-span-2 flex flex-col gap-6">
+            <div className="glass-card rounded-xl p-4 overflow-hidden flex flex-col flex-1">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-sm">Priority Accounts</h3>
+                <span className="text-xs text-muted-foreground">{accounts?.length || 0} total</span>
+              </div>
+              
+              <div className="flex-1 overflow-auto space-y-3 pr-2">
+                {loading ? (
+                  <div className="flex items-center justify-center h-32">
+                    <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                  </div>
+                ) : filteredAccounts?.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">No accounts found</p>
+                ) : (
+                  filteredAccounts?.map((account) => (
+                    <AccountCard
+                      key={account.id}
+                      account={account}
+                      isSelected={selectedAccountId === account.id}
+                      onSelect={() => setSelectedAccountId(account.id)}
+                      onAnalyze={() => handleAnalyzeAccount(account.id)}
+                      isAnalyzing={isAnalyzing || aiAnalysis.isPending}
+                    />
+                  ))
+                )}
+              </div>
             </div>
             
-            <div className="flex-1 overflow-auto space-y-3 pr-2">
-              {loading ? (
-                <div className="flex items-center justify-center h-32">
-                  <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-                </div>
-              ) : filteredAccounts?.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">No accounts found</p>
-              ) : (
-                filteredAccounts?.map((account) => (
-                  <AccountCard
-                    key={account.id}
-                    account={account}
-                    isSelected={selectedAccountId === account.id}
-                    onSelect={() => setSelectedAccountId(account.id)}
-                    onAnalyze={() => handleAnalyzeAccount(account.id)}
-                    isAnalyzing={isAnalyzing || aiAnalysis.isPending}
-                  />
-                ))
-              )}
-            </div>
+            {/* Agency Performance */}
+            <AgencyPerformance />
           </div>
 
           {/* World Map */}
@@ -228,15 +241,30 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* AI Insight Panel */}
+      {/* AI Insight Panel with Skeleton Loader */}
       <AnimatePresence>
-        {selectedAccountId && currentSelectedData && (
-          <AIInsightPanel
-            account={currentSelectedData.account as any}
-            predictions={currentSelectedData.predictions as any}
-            workflows={currentSelectedData.workflows as any}
-            onClose={() => setSelectedAccountId(null)}
-          />
+        {selectedAccountId && (
+          <motion.div
+            initial={{ x: 400, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: 400, opacity: 0 }}
+            className="w-[400px] border-l border-border/50 glass-card p-6 overflow-auto"
+          >
+            {showAILoader ? (
+              <AISkeletonLoader
+                isLoading={showAILoader}
+                onComplete={handleAILoaderComplete}
+                duration={1500}
+              />
+            ) : currentSelectedData ? (
+              <AIInsightPanel
+                account={currentSelectedData.account as any}
+                predictions={currentSelectedData.predictions as any}
+                workflows={currentSelectedData.workflows as any}
+                onClose={() => setSelectedAccountId(null)}
+              />
+            ) : null}
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
