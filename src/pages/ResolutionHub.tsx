@@ -332,38 +332,76 @@ export default function ResolutionHub() {
       {/* Bottom Navigation Dock */}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2">
         <div className="flex items-center gap-1 p-1.5 glass-card rounded-full">
-          <button className="p-3 rounded-full bg-primary text-primary-foreground">
+          <button 
+            className="p-3 rounded-full bg-primary text-primary-foreground flex items-center gap-2"
+            onClick={() => toast.info("Opening quick send dialog...")}
+          >
             <Send className="w-5 h-5" />
           </button>
-          <button className="p-3 rounded-full hover:bg-muted/50 text-muted-foreground transition-colors">
+          <button 
+            className="p-3 rounded-full hover:bg-muted/50 text-muted-foreground transition-colors"
+            onClick={() => setIsVaultOpen(true)}
+          >
             <CreditCard className="w-5 h-5" />
           </button>
-          <button className="p-3 rounded-full hover:bg-muted/50 text-muted-foreground transition-colors">
+          <button 
+            className="p-3 rounded-full hover:bg-muted/50 text-muted-foreground transition-colors"
+            onClick={() => toast.info("Search functionality coming soon...")}
+          >
             <Search className="w-5 h-5" />
           </button>
-          <button className="p-3 rounded-full hover:bg-muted/50 text-muted-foreground transition-colors">
+          <button 
+            className="p-3 rounded-full hover:bg-muted/50 text-muted-foreground transition-colors"
+            onClick={() => window.location.href = "/analytics"}
+          >
             <BarChart3 className="w-5 h-5" />
           </button>
         </div>
       </div>
 
-      {/* Floating AI Chat Button */}
-      <motion.button
-        onClick={() => setIsChatOpen(!isChatOpen)}
-        className={`fixed bottom-4 right-6 p-4 rounded-full shadow-lg transition-all z-50 ${
-          isChatOpen 
-            ? "bg-muted text-foreground" 
-            : "bg-gradient-to-br from-secondary to-primary text-primary-foreground glow-primary"
-        }`}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+      {/* Floating AI Chat Button - Enhanced Visibility */}
+      <motion.div
+        className="fixed bottom-4 right-6 z-50 flex items-center gap-2"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
       >
-        {isChatOpen ? (
-          <X className="w-6 h-6" />
-        ) : (
-          <MessageCircle className="w-6 h-6" />
+        {/* Pulsing attention indicator */}
+        {!isChatOpen && (
+          <motion.div
+            className="glass-card rounded-full px-3 py-2 flex items-center gap-2 border border-secondary/50"
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 1 }}
+          >
+            <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
+            <span className="text-xs font-medium text-secondary">AI Assistant</span>
+          </motion.div>
         )}
-      </motion.button>
+        
+        <motion.button
+          onClick={() => setIsChatOpen(!isChatOpen)}
+          className={`relative p-4 rounded-full shadow-lg transition-all ${
+            isChatOpen 
+              ? "bg-muted text-foreground" 
+              : "bg-gradient-to-br from-secondary to-primary text-primary-foreground glow-primary"
+          }`}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          {!isChatOpen && (
+            <motion.div
+              className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-success border-2 border-background"
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ repeat: Infinity, duration: 2 }}
+            />
+          )}
+          {isChatOpen ? (
+            <X className="w-6 h-6" />
+          ) : (
+            <MessageCircle className="w-6 h-6" />
+          )}
+        </motion.button>
+      </motion.div>
     </div>
   );
 }

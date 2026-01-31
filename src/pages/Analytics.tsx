@@ -302,6 +302,8 @@ export default function Analytics() {
                     outerRadius={80}
                     paddingAngle={2}
                     dataKey="value"
+                    label={({ name, value }) => `${value}%`}
+                    labelLine={false}
                   >
                     {riskDistribution.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
@@ -321,7 +323,8 @@ export default function Analytics() {
                 {riskDistribution.map((item) => (
                   <div key={item.name} className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
-                    <span className="text-xs text-muted-foreground">{item.name}</span>
+                    <span className="text-xs text-foreground font-medium">{item.name}</span>
+                    <span className="text-xs text-muted-foreground ml-auto">{item.value}%</span>
                   </div>
                 ))}
               </div>

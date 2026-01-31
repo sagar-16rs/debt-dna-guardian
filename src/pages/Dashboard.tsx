@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Globe, BarChart3, TrendingUp, Brain, Loader2 } from "lucide-react";
+import { Search, Brain, Loader2 } from "lucide-react";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { WorldMap } from "@/components/dashboard/WorldMap";
 import { LiveTicker } from "@/components/dashboard/LiveTicker";
@@ -10,7 +10,6 @@ import { ERPSyncButton } from "@/components/dashboard/ERPSyncButton";
 import { AgencyPerformance } from "@/components/dashboard/AgencyPerformance";
 import { AISkeletonLoader } from "@/components/dashboard/AISkeletonLoader";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useAccounts, useDashboardStats, useAccountWithPredictions } from "@/hooks/useAccounts";
 import { useAIAnalysis } from "@/hooks/useAIAnalysis";
@@ -208,35 +207,6 @@ export default function Dashboard() {
           {/* World Map */}
           <div className="col-span-3 glass-card rounded-xl p-4 relative overflow-hidden">
             <WorldMap />
-
-            {/* View Toggle */}
-            <div className="absolute bottom-4 left-4">
-              <Tabs defaultValue="global" className="glass-card rounded-full p-1">
-                <TabsList className="bg-transparent gap-1">
-                  <TabsTrigger
-                    value="global"
-                    className="rounded-full data-[state=active]:bg-muted/50 px-4 text-xs"
-                  >
-                    <Globe className="w-3 h-3 mr-1.5" />
-                    Global
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="analytics"
-                    className="rounded-full data-[state=active]:bg-muted/50 px-4 text-xs"
-                  >
-                    <BarChart3 className="w-3 h-3 mr-1.5" />
-                    Analytics
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="trends"
-                    className="rounded-full data-[state=active]:bg-muted/50 px-4 text-xs"
-                  >
-                    <TrendingUp className="w-3 h-3 mr-1.5" />
-                    Trends
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
           </div>
         </div>
       </div>
