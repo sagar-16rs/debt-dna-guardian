@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Globe, 
   MessageSquare, 
@@ -14,8 +15,10 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { useNetwork } from "@/contexts/NetworkContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { NetworkSimulator } from "./NetworkSimulator";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -31,6 +34,7 @@ const navItems = [
 export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
   const { user, isDemoMode, signOut } = useAuth();
+  const { isOffline, setIsOffline } = useNetwork();
 
   const userInitials = isDemoMode 
     ? "DM" 
@@ -58,10 +62,45 @@ export function AppLayout({ children }: AppLayoutProps) {
         </div>
       )}
 
+      {/* Offline Mode Banner */}
+      <AnimatePresence>
+        {isOffline && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="bg-gradient-to-r from-warning to-warning/80 text-warning-foreground py-2 px-4 text-center text-sm font-medium flex items-center justify-center gap-2 overflow-hidden"
+          >
+            <div className="w-2 h-2 rounded-full bg-warning-foreground animate-pulse" />
+            <span>Offline Mode active. Actions are being queued locally.</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Connection Restored Banner */}
+      <AnimatePresence>
+        {!isOffline && location.pathname !== "/" && (
+          <motion.div
+            key="online-flash"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0 }}
+            className="hidden"
+          />
+        )}
+      </AnimatePresence>
+
       {/* Top Navigation */}
-      <header className="h-16 border-b border-border/50 glass-card flex items-center justify-between px-6 sticky top-0 z-50">
+      <header className={cn(
+        "h-16 border-b border-border/50 glass-card flex items-center justify-between px-6 sticky top-0 z-50 transition-colors duration-300",
+        isOffline && "bg-warning/10 border-warning/30"
+      )}>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center glow-primary">
+          <div className={cn(
+            "w-10 h-10 rounded-lg flex items-center justify-center glow-primary transition-all",
+            isOffline 
+              ? "bg-gradient-to-br from-warning to-warning/80" 
+              : "bg-gradient-to-br from-primary to-primary-glow"
+          )}>
             <Shield className="w-5 h-5 text-primary-foreground" />
           </div>
           <div>
@@ -92,9 +131,16 @@ export function AppLayout({ children }: AppLayoutProps) {
         </nav>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-success/10 border border-success/30">
-            <Zap className="w-4 h-4 text-success" />
-            <span className="text-xs font-medium text-success">AI Active</span>
+          <div className={cn(
+            "flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors",
+            isOffline 
+              ? "bg-warning/10 border-warning/30" 
+              : "bg-success/10 border-success/30"
+          )}>
+            <Zap className={cn("w-4 h-4", isOffline ? "text-warning" : "text-success")} />
+            <span className={cn("text-xs font-medium", isOffline ? "text-warning" : "text-success")}>
+              {isOffline ? "Queued" : "AI Active"}
+            </span>
           </div>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/10 border border-secondary/30">
             <Shield className="w-4 h-4 text-secondary" />
@@ -132,6 +178,17 @@ export function AppLayout({ children }: AppLayoutProps) {
       <main className="flex-1 overflow-auto">
         {children}
       </main>
+
+      {/* Footer with Network Simulator */}
+      <footer className="border-t border-border/50 bg-card/50 py-3 px-6 flex items-center justify-between">
+        <div className="text-xs text-muted-foreground">
+          FedEx NEXUS | Intelligent Recovery OS
+        </div>
+        <NetworkSimulator isOffline={isOffline} onToggle={setIsOffline} />
+        <div className="text-xs text-muted-foreground">
+          © 2026 Team Smartron
+        </div>
+      </footer>
     </div>
   );
 }
