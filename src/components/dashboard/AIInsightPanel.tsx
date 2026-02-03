@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Account, AIPrediction, Workflow } from "@/hooks/useAccounts";
+import { DataHealthBadge } from "./DataHealthBadge";
 
 interface AIInsightPanelProps {
   account: Account;
@@ -29,7 +30,8 @@ export function AIInsightPanel({ account, predictions, workflows, onClose }: AII
       exit={{ opacity: 0, x: 100 }}
       className="w-80 glass-card border-l border-border/50 p-5 overflow-auto"
     >
-      <div className="flex items-center justify-between mb-6">
+      {/* Header with Data Health Badge */}
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Brain className="w-5 h-5 text-secondary" />
           <h3 className="font-semibold">AI Insights</h3>
@@ -37,6 +39,11 @@ export function AIInsightPanel({ account, predictions, workflows, onClose }: AII
         <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
           <X className="w-4 h-4" />
         </Button>
+      </div>
+      
+      {/* Data Health Indicator */}
+      <div className="flex justify-end mb-4">
+        <DataHealthBadge />
       </div>
 
       {/* Account Header */}

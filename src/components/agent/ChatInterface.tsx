@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Paperclip, Copy, AlertTriangle, Lock, CheckCircle, Mic } from "lucide-react";
+import { Send, Paperclip, Copy, AlertTriangle, Lock, CheckCircle, Mic, Clock, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { VoiceMode } from "./VoiceMode";
 import { ComplianceBlocker } from "./ComplianceBlocker";
+import { useNetwork } from "@/contexts/NetworkContext";
 
 interface Message {
   id: string;
@@ -14,6 +15,7 @@ interface Message {
   content: string;
   timestamp: string;
   blocked?: boolean;
+  status?: "pending" | "sent" | "delivered";
 }
 
 interface ChatInterfaceProps {
@@ -37,7 +39,7 @@ const BLOCKED_WORDS = ["sue", "legal", "lawsuit", "court", "attorney", "lawyer"]
 
 export function ChatInterface({
   account,
-  messages,
+  messages: initialMessages,
   complianceScore,
   isBlocked: externalBlocked,
   onMessageChange,
@@ -48,6 +50,13 @@ export function ChatInterface({
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [showComplianceBlocker, setShowComplianceBlocker] = useState(false);
   const [complianceViolation, setComplianceViolation] = useState(false);
+  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const { isOffline, queueAction } = useNetwork();
+
+  // Sync initial messages
+  useEffect(() => {
+    setMessages(initialMessages);
+  }, [initialMessages]);
 
   // Check for compliance violations
   useEffect(() => {
@@ -87,6 +96,35 @@ export function ChatInterface({
     }
   };
 
+  const handleSendMessage = () => {
+    if (inputValue.trim() === "" || isBlocked) return;
+
+    const newMessage: Message = {
+      id: crypto.randomUUID(),
+      role: "agent",
+      content: inputValue,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      status: isOffline ? "pending" : "sent",
+    };
+
+    if (isOffline) {
+      // Queue the message for later sync
+      queueAction("message", inputValue);
+    }
+
+    setMessages(prev => [...prev, newMessage]);
+    setInputValue("");
+  };
+
+  // Update pending messages when coming back online
+  useEffect(() => {
+    if (!isOffline) {
+      setMessages(prev => prev.map(msg => 
+        msg.status === "pending" ? { ...msg, status: "sent" as const } : msg
+      ));
+    }
+  }, [isOffline]);
+
   const handleComplianceBlockerDismiss = () => {
     setShowComplianceBlocker(false);
     setInputValue("");
@@ -97,6 +135,19 @@ export function ChatInterface({
     if (score >= 70) return "text-success";
     if (score >= 40) return "text-warning";
     return "text-critical";
+  };
+
+  const getStatusIcon = (status?: "pending" | "sent" | "delivered") => {
+    switch (status) {
+      case "pending":
+        return <Clock className="w-3 h-3 text-muted-foreground" />;
+      case "sent":
+        return <Check className="w-3 h-3 text-success" />;
+      case "delivered":
+        return <div className="flex"><Check className="w-3 h-3 text-success -mr-1" /><Check className="w-3 h-3 text-success" /></div>;
+      default:
+        return null;
+    }
   };
 
   return (
@@ -167,13 +218,17 @@ export function ChatInterface({
                     message.role === "agent"
                       ? "bg-primary text-primary-foreground rounded-br-md"
                       : "bg-muted rounded-bl-md",
-                    message.blocked && "opacity-50"
+                    message.blocked && "opacity-50",
+                    message.status === "pending" && "opacity-70"
                   )}
                 >
                   <p className="text-sm">{message.content}</p>
-                  <p className="text-[10px] mt-1 opacity-70 text-right">
-                    {message.timestamp}
-                  </p>
+                  <div className="flex items-center justify-end gap-1 mt-1">
+                    <p className="text-[10px] opacity-70">
+                      {message.timestamp}
+                    </p>
+                    {message.role === "agent" && getStatusIcon(message.status)}
+                  </div>
                 </div>
               </motion.div>
             ))}
@@ -231,12 +286,13 @@ export function ChatInterface({
         <div className="p-4 border-t border-border/50 glass-card">
           <div className={cn(
             "rounded-xl border-2 transition-all",
-            isBlocked ? "border-critical bg-critical/5" : "border-border/50 bg-card/50"
+            isBlocked ? "border-critical bg-critical/5" : 
+            isOffline ? "border-warning bg-warning/5" : "border-border/50 bg-card/50"
           )}>
             <Textarea
               value={inputValue}
               onChange={(e) => handleInputChange(e.target.value)}
-              placeholder="Type your message... (Try typing 'legal' to see compliance block)"
+              placeholder={isOffline ? "Offline - Messages will be queued..." : "Type your message... (Try typing 'legal' to see compliance block)"}
               className="border-0 bg-transparent resize-none min-h-[80px] focus-visible:ring-0"
             />
             <div className="flex items-center justify-between p-3 pt-0">
@@ -261,18 +317,27 @@ export function ChatInterface({
                     Send Blocked by Guardian AI
                   </div>
                 )}
+                {isOffline && !isBlocked && (
+                  <div className="flex items-center gap-1 text-xs text-warning">
+                    <Clock className="w-3 h-3" />
+                    Will queue for sync
+                  </div>
+                )}
               </div>
               <Button
                 disabled={isBlocked || inputValue.length === 0}
+                onClick={handleSendMessage}
                 className={cn(
                   "gap-2",
                   isBlocked
                     ? "bg-muted text-muted-foreground"
-                    : "bg-primary hover:bg-primary/90"
+                    : isOffline 
+                      ? "bg-warning hover:bg-warning/90 text-warning-foreground"
+                      : "bg-primary hover:bg-primary/90"
                 )}
               >
-                Send Message
-                {isBlocked ? <Lock className="w-4 h-4" /> : <Send className="w-4 h-4" />}
+                {isOffline ? "Queue Message" : "Send Message"}
+                {isBlocked ? <Lock className="w-4 h-4" /> : isOffline ? <Clock className="w-4 h-4" /> : <Send className="w-4 h-4" />}
               </Button>
             </div>
           </div>
